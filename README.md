@@ -81,6 +81,8 @@ public interface categoriaRepo extends JpaRepository<Department, String> {
 
 Analiza el modelo `Department`. Observa las anotaciones `@ManyToMany` y `@JoinTable`. Responde: ¿Cómo afectará JPA a la base de datos? ¿Qué tabla creará y qué columnas tendrá?
 
+**Respuesta:** JPA creará la tabla Categorias con las columnas id, nombre, descripcion, tipo, icono e imagen_navbar, y también la tabla de unión producto_deparments, porque @ManyToMany necesita una tabla intermedia. Esa tabla tendrá las columnas product_id y deparments_id, que son llaves foráneas hacia las tablas de las dos entidades, y juntas forman la llave primaria. Como Department es el lado propietario, @JoinTable es quien define el nombre de la tabla y de sus columnas.
+
 ## Paso 2: Modificar el modelo principal
 
 1. En el archivo `demo/src/main/java/com/example/demo/model/Producto.java`, agrega la siguiente relación a la clase `Producto`:
@@ -92,6 +94,8 @@ Analiza el modelo `Department`. Observa las anotaciones `@ManyToMany` y `@JoinTa
     private Set<Department> deparments = new HashSet<>();
 ```
 2. Investiga qué significa la anotación `@JsonIgnore` y explica por qué crees que se utiliza en `Producto`.
+
+   **Respuesta:** @JsonIgnore le dice a Jackson que no incluya ese campo al convertir el objeto a JSON ni al leerlo. Se usa en Producto porque Department tiene un conjunto de productos y Producto tendría un conjunto de departamentos, y al serializar se recorrería la relación de ida y vuelta sin terminar, lo que causa una recursión infinita y un error.
 
 ## Diagrama de clases
 
@@ -235,7 +239,11 @@ public String deleteDeparment(@PathVariable String id) {
 Observa el endpoint `addProductoCategoria/{productId}/{categoriaId}`, analiza el código y responde:
 
 - ¿Cuál crees que es su función?
+
+  **Respuesta:** Su función es asociar un producto existente con una categoría existente. Busca los dos por su id, agrega el producto al conjunto de productos de la categoría y guarda la categoría, con lo que se inserta un registro en la tabla producto_deparments.
 - ¿Por qué se declaran dos repositorios: uno de tipo `categoriaRepo` y otro de tipo `productoRepo`?
+
+  **Respuesta:** Porque el endpoint trabaja con dos entidades distintas y cada repositorio solo accede a una tabla. categoriaRepo se usa para buscar y guardar la categoría, y productoRepo para buscar el producto que se va a asociar.
 
 ## Endpoints del ejercicio
 
